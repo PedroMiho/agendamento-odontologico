@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RequestMapping("/dentista")
+@RequestMapping("/paciente")
 @RestController
 public class ControllerDentista {
 
