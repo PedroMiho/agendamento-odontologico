@@ -1,0 +1,62 @@
+name: Agendamento Odontologico CI/CD
+
+on:
+  pull_request:
+    paths:
+      - "agendamento-odontologico/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "agendamento-odontologico/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: agendamento-odontologico
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: agendamento-odontologico/pom.xml
+
+      - name: Permitir execução do Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Executar testes e gerar o pacote
+        run: ./mvnw --batch-mode clean verify
+
+      - name: Validar a imagem Docker
+        run: docker build --tag agendamento-odontologico:${{ github.sha }} .
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: test-and-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Acionar o Render
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "O Secret RENDER_DEPLOY_HOOK_URL não foi configurado."
+            exit 1
+          fi
+
+          curl --fail --silent --show-error \
+            --request POST "$RENDER_DEPLOY_HOOK_URL"
