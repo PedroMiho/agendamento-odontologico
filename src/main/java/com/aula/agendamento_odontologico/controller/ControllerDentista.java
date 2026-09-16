@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 @CrossOrigin(
-        origins = "https://pedromiho.github.io/agendamento-odotologico-front/"
+        origins = "https://pedromiho.github.io"
 )
 @RequestMapping("/paciente")
 @RestController
